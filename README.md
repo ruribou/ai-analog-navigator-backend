@@ -1,19 +1,84 @@
 # AI Analog Navigator Backend
 
 これは研究のバックエンドリポジトリです。
-開発環境に uv を使用しています。
+Pgvector + PostgreSQLを使用したRAGシステムのバックエンドAPIです。
 
-## Requirements
+## 技術スタック
 
-- Python 3.12.12
-- uv 0.9.5
+- **Backend**: FastAPI (Python 3.12)
+- **Database**: PostgreSQL with pgvector extension
+- **Vector Search**: pgvector
+- **Containerization**: Docker & Docker Compose
 
-### 設定
+## 必要な環境
+
+- Docker Desktop
+- Python 3.12.12 (ローカル開発用)
+- uv 0.9.5 (ローカル開発用)
+
+## Docker環境での起動
+
+### 1. 環境変数の設定（オプション）
+
+必要に応じて`.env`ファイルを作成してください：
+
 ```bash
-uv venv --python=3.12.12
-uv add -r requirements.txt 
+# PostgreSQL Database Configuration
+POSTGRES_DB=ai_navigator
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+
+# Database URL for application
+DATABASE_URL=postgresql://postgres:password@postgres:5432/ai_navigator
 ```
 
+### 2. Docker Composeでサービス起動
+
 ```bash
+# すべてのサービスを起動
+docker compose up -d
+
+# ログを確認
+docker compose logs -f
+
+# 特定のサービスのログを確認
+docker compose logs -f api
+docker compose logs -f postgres
+```
+
+### 3. サービスの確認
+
+- **API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **PostgreSQL**: localhost:5432 (pgvector拡張付き)
+
+### 4. サービスの停止
+
+```bash
+# サービス停止
+docker compose down
+
+# データも削除する場合
+docker compose down -v
+```
+
+## ローカル開発環境
+
+### Makefileを使用
+```bash
+# ローカル環境セットアップ
+make local-setup
+
+# ローカルでAPI起動
+make local-run
+```
+
+### 手動セットアップ
+```bash
+# 設定
+uv venv --python=3.12.12
+uv add -r requirements.txt 
+
+# 起動
 uv run main.py
 ```

@@ -3,6 +3,10 @@ fastapi==0.119.1
 pydantic==2.12.3
 uvicorn==0.32.1
 
+# Database dependencies (for future RAG implementation)
+psycopg2-binary==2.9.9
+python-dotenv==1.0.0
+
 # Additional dependencies
 annotated-types==0.7.0
 anyio==4.11.0
