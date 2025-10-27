@@ -10,6 +10,34 @@ Pgvector + PostgreSQLを使用したRAGシステムのバックエンドAPIで�
 - **Vector Search**: pgvector
 - **Containerization**: Docker & Docker Compose
 
+## プロジェクト構造
+
+```
+ai-analog-navigator-backend/
+├── app/                    # メインアプリケーション
+│   ├── main.py            # FastAPIアプリケーション
+│   ├── config.py          # 設定管理
+│   ├── api/               # APIエンドポイント
+│   │   └── endpoints/
+│   │       ├── health.py
+│   │       └── transcription.py
+│   ├── core/              # コア機能
+│   │   ├── exceptions.py
+│   │   └── middleware.py
+│   ├── services/          # ビジネスロジック
+│   │   ├── whisper_service.py
+│   │   ├── lm_studio_service.py
+│   │   ├── audio_processing_service.py
+│   │   └── rag_service.py
+│   └── models/            # Pydanticモデル
+│       └── responses.py
+├── docker-compose.yml
+├── Dockerfile
+├── pyproject.toml
+├── README.md
+└── Makefile
+```
+
 ## 必要な環境
 
 - Docker Desktop
@@ -75,9 +103,11 @@ make local-run
 
 ### 手動セットアップ
 ```bash
-# 設定
-uv venv --python=3.12.12
-uv add -r requirements.txt 
+# 依存関係インストール
+uv sync
+
+# 開発用依存関係も含める場合
+uv sync --extra test
 
 # 起動
 uv run main.py
