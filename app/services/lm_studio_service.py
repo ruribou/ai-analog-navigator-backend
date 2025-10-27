@@ -14,26 +14,60 @@ class LMStudioService:
     """LM Studio文章校正サービス"""
     
     @staticmethod
+    async def check_model_availability() -> bool:
+        """LM Studioのモデルが利用可能かチェック"""
+        try:
+            response = requests.get(
+                f"{settings.LM_STUDIO_BASE_URL}/models",
+                timeout=5
+            )
+            if response.status_code == 200:
+                models = response.json()
+                available_models = [model.get("id", "") for model in models.get("data", [])]
+                logger.info(f"利用可能なモデル: {available_models}")
+                return settings.LM_STUDIO_MODEL in available_models
+            return False
+        except Exception as e:
+            logger.error(f"LM Studioモデル確認エラー: {e}")
+            return False
+    
+    @staticmethod
     async def correct_text(text: str) -> str:
         """LM Studioを使用して文章を校正"""
         try:
-            prompt = f"""以下の文章を自然で読みやすい日本語に校正してください。文法的な誤りを修正し、より適切な表現に変更してください。校正後の文章のみを出力してください。
+            # システムプロンプトで役割を明確に定義
+            system_prompt = """あなたは日本語文章校正の専門家です。音声認識で生成されたテキストを、自然で読みやすい日本語に校正することが得意です。
 
-元の文章：
-{text}
+校正の方針：
+1. 文法的な誤りを修正
+2. 適切な句読点を追加
+3. 自然な日本語表現に変更
+4. 元の意味を保持
+5. 簡潔で分かりやすい文章にする
 
-校正後の文章："""
+校正後の文章のみを出力してください。"""
+
+            user_prompt = f"""以下の音声認識テキストを校正してください：
+
+{text}"""
 
             payload = {
                 "model": settings.LM_STUDIO_MODEL,
                 "messages": [
                     {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
                         "role": "user",
-                        "content": prompt
+                        "content": user_prompt
                     }
                 ],
-                "temperature": 0.3,
-                "max_tokens": 1000
+                "temperature": 0.2,  # より一貫した校正のため低めに設定
+                "max_tokens": 2000,  # 20Bモデルなので余裕を持って
+                "top_p": 0.9,
+                "frequency_penalty": 0.1,
+                "presence_penalty": 0.1
             }
             
             response = requests.post(

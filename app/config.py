@@ -11,9 +11,10 @@ class Settings:
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "base")  # tiny, base, small, medium, large
     
     # LM Studio設定
-    LM_STUDIO_BASE_URL: str = os.getenv("LM_STUDIO_BASE_URL", "http://localhost:1234/v1")
-    LM_STUDIO_MODEL: str = os.getenv("LM_STUDIO_MODEL", "local-model")
-    LM_STUDIO_TIMEOUT: int = int(os.getenv("LM_STUDIO_TIMEOUT", "30"))
+    # デフォルト: openai/gpt-oss-20b @ http://127.0.0.1:1234
+    LM_STUDIO_BASE_URL: str = os.getenv("LM_STUDIO_BASE_URL", "http://127.0.0.1:1234/v1")
+    LM_STUDIO_MODEL: str = os.getenv("LM_STUDIO_MODEL", "openai/gpt-oss-20b")
+    LM_STUDIO_TIMEOUT: int = int(os.getenv("LM_STUDIO_TIMEOUT", "60"))  # 20Bモデルなので少し長めに
     
     # ファイルアップロード設定
     MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", "50000000"))  # 50MB

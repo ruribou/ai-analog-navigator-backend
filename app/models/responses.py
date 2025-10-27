@@ -20,7 +20,9 @@ class ErrorResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     """ヘルスチェックレスポンス"""
-    status: str
+    status: str  # "healthy", "degraded", "unhealthy"
     whisper_model: str
     lm_studio_url: str
+    lm_studio_model: Optional[str] = None
+    lm_studio_available: Optional[bool] = None
     supported_formats: list
