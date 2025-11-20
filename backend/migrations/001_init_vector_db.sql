@@ -50,9 +50,9 @@ CREATE TABLE IF NOT EXISTS chunks (
   source_url      TEXT NOT NULL,
 
   -- Embedding fields
-  embedding       VECTOR(768) NOT NULL, -- text-embedding-nomic-embed-text-v1.5
+  embedding       VECTOR(768) NOT NULL, -- text-embedding-nomic-embed-text-v1.5 (current)
   embedding_model TEXT NOT NULL,
-  embedding_dim   INT NOT NULL CHECK (embedding_dim = 768),
+  embedding_dim   INT NOT NULL CHECK (embedding_dim > 0 AND embedding_dim <= 4096),
   version         INT NOT NULL DEFAULT 1,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );

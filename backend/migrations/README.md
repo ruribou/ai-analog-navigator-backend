@@ -98,9 +98,9 @@ POSTGRES_PASSWORD=password
 - `validity_start`, `validity_end`: 有効期間
 
 **Embedding フィールド:**
-- `embedding` (VECTOR(768)): ベクトル（768次元）
+- `embedding` (VECTOR(768)): ベクトル（768次元固定、現在のスキーマ）
 - `embedding_model` (TEXT): モデル名（例: "nomic-embed-text-v1.5"）
-- `embedding_dim` (INT): 実際の次元数（CHECK制約: 768固定）
+- `embedding_dim` (INT): 実際の次元数（CHECK制約: 1〜4096、VECTOR型との整合性はアプリ層で保証）
 - `version` (INT): バージョン管理用
 
 ### インデックス戦略
@@ -131,23 +131,53 @@ POSTGRES_PASSWORD=password
 
 将来的に別のembeddingモデルに切り替える場合:
 
+#### 🔄 同一次元数（768次元）のモデル切り替え
+
 **オプションA: バージョン管理（推奨）**
 ```sql
--- 新モデルでchunksを追加
+-- 新モデル（768次元）でchunksを追加
 INSERT INTO chunks (
   ...
-  embedding_model = 'new-model-name',
-  embedding_dim = 1024,  -- 新モデルの次元数
-  version = 2  -- バージョンをインクリメント
+  embedding_model = 'openai-text-embedding-3-small',
+  embedding_dim = 768,
+  version = 2
 );
 
 -- 検索時にモデルを指定
-WHERE embedding_model = 'new-model-name' AND version = 2
+WHERE embedding_model = 'openai-text-embedding-3-small' AND version = 2
 ```
 
-**オプションB: テーブル分割**
-- モデルごとに chunks テーブルを分ける
-- スキーマ管理は複雑になるが、次元数を最適化できる
+#### 📐 異なる次元数（1024次元など）への対応
+
+**現在の制限:**
+- `VECTOR(768)`は次元数が固定
+- 1024次元のベクトルは現在のスキーマでは保存不可
+
+**対応方法:**
+
+**方法1: マイグレーションで新カラム追加**
+```sql
+-- backend/migrations/002_add_1024_dim_support.sql
+ALTER TABLE chunks ADD COLUMN embedding_1024 VECTOR(1024);
+ALTER TABLE chunks ADD COLUMN embedding_dim_1024 INT;
+
+-- 検索時は次元数に応じてカラムを切り替え
+WHERE embedding_dim = 768  -- embedding カラムを使用
+WHERE embedding_dim = 1024 -- embedding_1024 カラムを使用
+```
+
+**方法2: 新テーブル作成**
+```sql
+CREATE TABLE chunks_v2 (
+  ...
+  embedding VECTOR(1024) NOT NULL,
+  embedding_dim INT NOT NULL CHECK (embedding_dim > 0 AND embedding_dim <= 4096),
+  ...
+);
+```
+
+**方法3: pgvectorの将来バージョンに期待**
+- PostgreSQL + pgvectorの将来バージョンで可変次元VECTORが実装される可能性
 
 詳細は `docs/tasks/2025-11-20-vector-db-phase1.md` を参照。
 
