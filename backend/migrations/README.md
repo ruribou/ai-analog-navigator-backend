@@ -76,10 +76,10 @@ POSTGRES_PASSWORD=password
 
 - `doc_id` (UUID): 主キー
 - `source_url` (TEXT): ソースURL（ユニーク制約）
-- `source_type` (TEXT): ドキュメント種別
+- `source_type` (TEXT): ドキュメント種別（CHECK制約: 'school_hp' | 'lab_hp' | 'pdf' | 'news'）
 - `title`, `lang`, `fetched_at`, `updated_at`: メタデータ
 - `content_hash` (TEXT): 差分更新用ハッシュ
-- `status` (TEXT): active / superseded / error
+- `status` (TEXT): ステータス（CHECK制約: 'active' | 'superseded' | 'error'）
 - `meta` (JSONB): 拡張用メタデータ
 
 ### chunks テーブル
@@ -100,7 +100,7 @@ POSTGRES_PASSWORD=password
 **Embedding フィールド:**
 - `embedding` (VECTOR(768)): ベクトル（768次元）
 - `embedding_model` (TEXT): モデル名（例: "nomic-embed-text-v1.5"）
-- `embedding_dim` (INT): 実際の次元数
+- `embedding_dim` (INT): 実際の次元数（CHECK制約: 768固定）
 - `version` (INT): バージョン管理用
 
 ### インデックス戦略

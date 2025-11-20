@@ -11,13 +11,13 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS documents (
   doc_id          UUID PRIMARY KEY,
   source_url      TEXT NOT NULL,
-  source_type     TEXT NOT NULL,  -- school_hp / lab_hp / pdf / news
+  source_type     TEXT NOT NULL CHECK (source_type IN ('school_hp', 'lab_hp', 'pdf', 'news')),
   title           TEXT,
   lang            TEXT DEFAULT 'ja',
   fetched_at      TIMESTAMPTZ NOT NULL,
   updated_at      TIMESTAMPTZ,
   content_hash    TEXT NOT NULL,
-  status          TEXT NOT NULL DEFAULT 'active', -- active / superseded / error
+  status          TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'superseded', 'error')),
   meta            JSONB DEFAULT '{}'::jsonb
 );
 
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS chunks (
   -- Embedding fields
   embedding       VECTOR(768) NOT NULL, -- text-embedding-nomic-embed-text-v1.5
   embedding_model TEXT NOT NULL,
-  embedding_dim   INT NOT NULL,
+  embedding_dim   INT NOT NULL CHECK (embedding_dim = 768),
   version         INT NOT NULL DEFAULT 1,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
