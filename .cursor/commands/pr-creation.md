@@ -4,7 +4,7 @@
 完了した作業内容をPull Requestとしてまとめる際に、Plan/Taskとの紐付けやテスト結果を整理し、PR本文テンプレートを生成する。
 
 ## 引数
-`/pr-creation <docs/tasks/.../task.md または 変更概要MD>`
+`/pr-creation`
 
 ## 実行フロー
 1. 引数で指定されたTask/概要ファイルを読み込み、関連するPlan、完了ステップ、検証結果を抽出する。
