@@ -53,8 +53,8 @@ setup: build up ## 初回セットアップ（ビルド + 起動）
 
 # ローカル開発環境
 local-setup: ## ローカル開発環境のセットアップ
-	uv venv --python=3.12.12
-	uv add -r requirements.txt
+	cd backend && uv venv --python=3.12.12
+	cd backend && uv sync
 
 local-run: ## ローカルでAPIを起動
-	uv run main.py
+	cd backend && uv run main.py

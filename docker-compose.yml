@@ -24,7 +24,7 @@ services:
   # FastAPI Application
   api:
     build:
-      context: .
+      context: backend
       dockerfile: Dockerfile
     container_name: ai-navigator-api
     environment:
@@ -33,7 +33,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app
+      - ./backend:/app
     depends_on:
       postgres:
         condition: service_healthy
