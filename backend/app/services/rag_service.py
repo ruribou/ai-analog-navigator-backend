@@ -392,3 +392,47 @@ class RAGService:
             k: (v - min_score) / (max_score - min_score)
             for k, v in scores.items()
         }
+
+    async def query_with_answer(
+        self,
+        query_text: str,
+        strategy: str = "prefilter_dense",
+        filters: Optional[Dict[str, Any]] = None,
+        top_k: int = 5
+    ) -> Dict[str, Any]:
+        """
+        クエリに対して検索 + 回答生成を実行
+        
+        Args:
+            query_text: 検索クエリ
+            strategy: 検索戦略 (dense, prefilter_dense, hybrid)
+            filters: フィルタ条件
+            top_k: 取得件数
+        
+        Returns:
+            回答と使用したチャンク情報
+        """
+        try:
+            # 1. 検索戦略に応じてチャンクを取得
+            if strategy == "dense":
+                chunks = await self.search_dense(query_text, top_k)
+            elif strategy == "prefilter_dense":
+                chunks = await self.search_prefilter_dense(query_text, filters, top_k)
+            elif strategy == "hybrid":
+                chunks = await self.search_hybrid(query_text, filters, top_k)
+            else:
+                raise ValueError(f"Unknown strategy: {strategy}")
+            
+            # 2. LLMで回答を生成
+            answer = await self.lm_studio.generate_answer(query_text, chunks)
+            
+            # 3. 結果を返す
+            return {
+                "answer": answer,
+                "used_strategy": strategy,
+                "context_chunks": chunks
+            }
+        
+        except Exception as e:
+            logger.error(f"RAGクエリエラー: {e}")
+            raise
