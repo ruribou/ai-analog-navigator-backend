@@ -4,7 +4,6 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, Any
 import sys
 
 # パスを追加（app モジュールをインポートできるように）
@@ -44,7 +43,7 @@ async def ingest_page(html_path: Path, url: str) -> bool:
         成功した場合True、失敗した場合False
     """
     try:
-        logger.info(f"=" * 60)
+        logger.info("=" * 60)
         logger.info(f"インジェスト開始: {html_path.name}")
         logger.info(f"URL: {url}")
         
@@ -82,7 +81,7 @@ async def ingest_page(html_path: Path, url: str) -> bool:
         
         # 4. 埋め込み生成
         chunk_texts = [chunk['text'] for chunk in chunks]
-        logger.info(f"埋め込み生成開始...")
+        logger.info("埋め込み生成開始...")
         embeddings = await LMStudioService.generate_embeddings(chunk_texts, batch_size=32)
         logger.info(f"埋め込み生成完了: {len(embeddings)}個")
         

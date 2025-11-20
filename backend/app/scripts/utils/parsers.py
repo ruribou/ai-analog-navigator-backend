@@ -1,7 +1,7 @@
 """
 ページ種別ごとのHTMLパーサ
 """
-from typing import Dict, Any, List
+from typing import Dict, Any
 from bs4 import BeautifulSoup
 import re
 
