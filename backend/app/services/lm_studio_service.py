@@ -154,6 +154,37 @@ class LMStudioService:
         return 768
     
     @staticmethod
+    def _clean_text(text: str) -> str:
+        """
+        テキストからHTMLタグやマークダウン記号を除去して整形
+        
+        Args:
+            text: 元のテキスト
+        
+        Returns:
+            整形されたテキスト
+        """
+        import re
+        
+        # HTMLタグを除去
+        text = re.sub(r'<[^>]+>', ' ', text)
+        
+        # マークダウンの強調記号を除去
+        text = re.sub(r'\*\*([^*]+)\*\*', r'\1', text)  # **bold**
+        text = re.sub(r'\*([^*]+)\*', r'\1', text)      # *italic*
+        
+        # マークダウンの見出し記号を除去
+        text = re.sub(r'^#+\s+', '', text, flags=re.MULTILINE)
+        
+        # 連続する空白を1つに
+        text = re.sub(r'\s+', ' ', text)
+        
+        # 前後の空白を削除
+        text = text.strip()
+        
+        return text
+    
+    @staticmethod
     async def generate_answer(query: str, context_chunks: list[dict]) -> str:
         """
         コンテキストチャンクを使ってクエリに対する回答を生成
@@ -166,9 +197,9 @@ class LMStudioService:
             生成された回答テキスト
         """
         try:
-            # コンテキストを整形
+            # コンテキストを整形（テキストをクリーンアップ）
             context_text = "\n\n".join([
-                f"[情報源 {i+1}]\n{chunk['text']}"
+                f"[情報源 {i+1}]\n{LMStudioService._clean_text(chunk['text'])}"
                 for i, chunk in enumerate(context_chunks)
             ])
             
@@ -180,7 +211,13 @@ class LMStudioService:
 2. 分かりやすく、親しみやすい表現を使う
 3. 情報源に記載がない内容は推測しない
 4. 必要に応じて具体的な情報（研究室名、教授名など）を含める
-5. 簡潔にまとめる（200文字程度を目安）"""
+5. 簡潔にまとめる（200文字程度を目安）
+
+フォーマット指示：
+- HTMLタグ（<br>, <div>など）やマークダウン記号（**, ##など）は除去し、自然な日本語で回答する
+- 複数の項目を説明する場合は、「〜、〜、〜といった分野です」のように自然な文章にまとめる
+- 箇条書きが必要な場合は「まず〜、次に〜、さらに〜」のように文章で表現する
+- 読みやすい段落構成を意識する"""
 
             user_prompt = f"""以下の情報源を基に、質問に答えてください。
 
