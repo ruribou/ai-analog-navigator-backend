@@ -9,11 +9,17 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Pythonの依存関係をコピーしてインストール
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# uvをインストール
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Pythonの依存関係をコピー
+COPY pyproject.toml uv.lock ./
+
+# 依存関係をインストール
+RUN uv sync --frozen --no-dev
 
 # アプリケーションのソースコードをコピー
 COPY . .
@@ -22,4 +28,4 @@ COPY . .
 EXPOSE 8000
 
 # アプリケーションを起動
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
