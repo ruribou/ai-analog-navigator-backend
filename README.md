@@ -78,69 +78,127 @@ POSTGRES_PASSWORD=password
 DATABASE_URL=postgresql://postgres:password@postgres:5432/ai_navigator
 ```
 
-### 3. Docker Composeでサービス起動
+### 3. アプリケーションの起動
 
 ```bash
-# すべてのサービスをビルド＆起動
-docker compose up --build -d
-
-# ログを確認
-docker compose logs -f
-
-# 特定のサービスのログを確認
-docker compose logs -f frontend
-docker compose logs -f api
-docker compose logs -f postgres
+# 初回セットアップ（ビルド + 起動）
+make setup
 ```
 
-### 4. アプリケーションへのアクセス
+これだけで、すべてのサービスが起動し、以下のURLでアクセスできます：
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API Docs**: http://localhost:8000/docs
 - **PostgreSQL**: localhost:5432 (pgvector拡張付き)
 
-### 5. サービスの停止
+### 4. 利用可能なコマンドの確認
 
 ```bash
-# サービス停止
-docker compose down
-
-# データも含めて完全に削除
-docker compose down -v
+# すべてのMakeコマンドを表示
+make help
 ```
 
-## 開発コマンド
+## Makeコマンド一覧
 
-### コンテナの管理
+プロジェクトの操作を簡略化するため、Makefileを用意しています。
+
+### 基本操作
 
 ```bash
-# サービスの状態確認
-docker compose ps
+# ヘルプを表示（全コマンド一覧）
+make help
 
-# 特定のサービスを再起動
-docker compose restart api
-docker compose restart frontend
+# 初回セットアップ（ビルド + 起動）
+make setup
 
-# コンテナに入る
-docker compose exec api bash
-docker compose exec frontend sh
+# 開発環境を起動（ログ表示付き）
+make dev
 
-# イメージを再ビルド
-docker compose build --no-cache
+# すべてのサービスを起動
+make up
+
+# すべてのサービスを停止
+make down
+
+# すべてのサービスを再起動
+make restart
 ```
 
-### ログの確認
+### ビルド関連
 
 ```bash
-# 全サービスのログ
-docker compose logs -f
+# イメージをビルド
+make build
 
-# 最新50行のみ表示
-docker compose logs --tail=50 api
+# キャッシュなしで完全リビルド
+make rebuild
 
-# エラーログのみ抽出
-docker compose logs api | grep ERROR
+# サービス停止 + ボリューム削除
+make clean
+
+# サービス停止 + ボリューム削除 + イメージ削除
+make clean-all
+```
+
+### 個別サービス操作
+
+```bash
+# フロントエンドのみ起動/停止/再起動
+make start-frontend
+make stop-frontend
+make restart-frontend
+
+# バックエンドAPIのみ起動/停止/再起動
+make start-api
+make stop-api
+make restart-api
+
+# データベースのみ起動/停止/再起動
+make start-db
+make stop-db
+make restart-db
+```
+
+### ログ確認
+
+```bash
+# すべてのサービスのログを表示
+make logs
+
+# フロントエンドのログのみ表示
+make logs-frontend
+
+# バックエンドAPIのログのみ表示
+make logs-api
+
+# データベースのログのみ表示
+make logs-db
+```
+
+### シェル接続
+
+```bash
+# フロントエンドコンテナに接続
+make shell-frontend
+
+# バックエンドAPIコンテナに接続
+make shell-api
+
+# データベースに接続（psql）
+make shell-db
+```
+
+### ステータス確認
+
+```bash
+# サービスの状態を確認
+make status
+# または
+make ps
+
+# ヘルスチェック（各サービスの接続確認）
+make health
 ```
 
 ## 各サービスについて
@@ -168,7 +226,67 @@ docker compose logs api | grep ERROR
 - **拡張機能**: pgvector (ベクトル検索用)
 - **永続化**: `postgres_data`ボリューム
 
+## 開発ワークフロー例
+
+### 日常的な開発
+
+```bash
+# 1. サービス起動
+make up
+
+# 2. ログを確認しながら開発
+make logs
+
+# 3. コード変更後、特定のサービスを再起動
+make restart-api        # バックエンドのみ
+make restart-frontend   # フロントエンドのみ
+
+# 4. 終了時
+make down
+```
+
+### デバッグ
+
+```bash
+# ヘルスチェックで問題を確認
+make health
+
+# 特定のサービスのログを確認
+make logs-api
+make logs-frontend
+
+# コンテナに入って直接確認
+make shell-api
+make shell-frontend
+```
+
+### クリーンな環境で再起動
+
+```bash
+# データを保持して再起動
+make down
+make rebuild
+make up
+
+# データも含めて完全にクリーン
+make clean-all
+make setup
+```
+
 ## トラブルシューティング
+
+### サービスが起動しない
+
+```bash
+# サービスの状態を確認
+make status
+
+# ログでエラーを確認
+make logs
+
+# ヘルスチェックを実行
+make health
+```
 
 ### ポートが既に使用されている
 
@@ -178,28 +296,41 @@ lsof -i :3000
 lsof -i :8000
 lsof -i :5432
 
-# プロセスを終了してから再起動
-docker compose down
-docker compose up -d
+# サービスを停止して再起動
+make down
+make up
 ```
 
-### イメージのクリーンビルド
+### イメージやキャッシュの問題
 
 ```bash
-# すべて停止して削除
-docker compose down -v
+# キャッシュなしで完全リビルド
+make rebuild
 
-# イメージも削除
-docker compose down --rmi all -v
-
-# 再ビルド
-docker compose up --build -d
+# 完全にクリーンアップしてから再セットアップ
+make clean-all
+make setup
 ```
 
-### データベースのリセット
+### データベースの問題
 
 ```bash
-# ボリュームを削除（データが消えます）
-docker compose down -v
-docker compose up -d
+# データベースのログを確認
+make logs-db
+
+# データベースに直接接続して確認
+make shell-db
+
+# データベースをリセット（データが消えます）
+make clean
+make up
+```
+
+### コンテナ内で直接作業したい
+
+```bash
+# 各コンテナに入る
+make shell-frontend  # フロントエンド
+make shell-api       # バックエンド
+make shell-db        # データベース
 ```
