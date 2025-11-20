@@ -27,6 +27,7 @@ services:
     container_name: ai-navigator-api
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-ai_navigator}
+      LM_STUDIO_BASE_URL: http://host.docker.internal:1234/v1
       PYTHONPATH: /app
     ports:
       - "8000:8000"
