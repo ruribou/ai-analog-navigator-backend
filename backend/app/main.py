@@ -8,7 +8,7 @@ from fastapi.responses import PlainTextResponse
 from app.config import settings
 from app.core.middleware import setup_middleware
 from app.core.exceptions import http_exception_handler, general_exception_handler
-from app.api.endpoints import health, transcription
+from app.api.endpoints import health, transcription, search
 
 # ログ設定
 logging.basicConfig(level=getattr(logging, settings.LOG_LEVEL))
@@ -31,6 +31,7 @@ app.add_exception_handler(Exception, general_exception_handler)
 # ルーター設定
 app.include_router(health.router, tags=["health"])
 app.include_router(transcription.router, tags=["transcription"])
+app.include_router(search.router, prefix="/api", tags=["search"])
 
 
 @app.get("/", response_class=PlainTextResponse)
