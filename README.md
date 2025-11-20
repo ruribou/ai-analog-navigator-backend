@@ -17,36 +17,36 @@ Whisper + LM Studio + pgvectorを使用したRAGシステムを搭載してい�
 
 ```
 ai-analog-navigator/
-├── frontend/              # Next.jsフロントエンド
-│   ├── app/              # App Router
-│   ├── public/           # 静的ファイル
-│   ├── Dockerfile        # フロントエンド用Docker設定
+├── frontend/               # Next.jsフロントエンド
+│   ├── app/                # App Router
+│   ├── public/             # 静的ファイル
+│   ├── Dockerfile          # フロントエンド用Docker設定
 │   ├── next.config.ts
 │   ├── package.json
 │   └── tsconfig.json
-├── backend/               # FastAPIバックエンド
-│   ├── app/              # メインアプリケーション
-│   │   ├── main.py      # FastAPIアプリケーション
-│   │   ├── config.py    # 設定管理
-│   │   ├── api/         # APIエンドポイント
+├── backend/                # FastAPIバックエンド
+│   ├── app/                # メインアプリケーション
+│   │   ├── main.py             # FastAPIアプリケーション
+│   │   ├── config.py           # 設定管理
+│   │   ├── api/                # APIエンドポイント
 │   │   │   └── endpoints/
 │   │   │       ├── health.py
 │   │   │       └── transcription.py
-│   │   ├── core/        # コア機能
+│   │   ├── core/               # コア機能
 │   │   │   ├── exceptions.py
 │   │   │   └── middleware.py
-│   │   ├── services/    # ビジネスロジック
+│   │   ├── services/           # ビジネスロジック
 │   │   │   ├── whisper_service.py
 │   │   │   ├── lm_studio_service.py
 │   │   │   ├── audio_processing_service.py
 │   │   │   └── rag_service.py
-│   │   └── models/      # Pydanticモデル
+│   │   └── models/             # Pydanticモデル
 │   │       └── responses.py
-│   ├── Dockerfile       # バックエンド用Docker設定
+│   ├── Dockerfile              # バックエンド用Docker設定
 │   ├── pyproject.toml
 │   └── uv.lock
-├── docker-compose.yml    # Docker Compose設定
-├── Makefile             # 開発用コマンド
+├── docker-compose.yml         # Docker Compose設定
+├── Makefile                   # 開発用コマンド
 └── README.md
 ```
 
