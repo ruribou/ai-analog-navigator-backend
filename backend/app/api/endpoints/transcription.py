@@ -58,7 +58,7 @@ async def transcribe_audio(
     file_extension = os.path.splitext(file.filename)[1].lower()
     
     # webm, oggも追加
-    supported_formats = settings.SUPPORTED_AUDIO_FORMATS + ['.webm', '.ogg']
+    supported_formats = list(settings.SUPPORTED_AUDIO_FORMATS) + ['.webm', '.ogg']
     
     if file_extension not in supported_formats:
         raise HTTPException(

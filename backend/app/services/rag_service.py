@@ -392,7 +392,7 @@ class RAGService:
             k: (v - min_score) / (max_score - min_score)
             for k, v in scores.items()
         }
-    
+
     async def query_with_answer(
         self,
         query_text: str,
