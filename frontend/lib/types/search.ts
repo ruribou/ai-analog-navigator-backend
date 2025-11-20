@@ -23,7 +23,7 @@ export interface SearchResultMetadata {
   lab?: string;
   professor?: string[];
   tags?: string[];
-  [key: string]: any;
+  [key: string]: string | string[] | undefined;
 }
 
 export interface SearchResultItem {
