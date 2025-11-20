@@ -44,7 +44,7 @@ temp/
 
 .DS_Store
 
-/docs
+docs/
 
 # Scraped data
 inputs/scraped/
