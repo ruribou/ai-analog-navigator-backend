@@ -5,7 +5,6 @@ import requests
 import logging
 
 from app.config import settings
-from app.core.exceptions import LMStudioError
 
 logger = logging.getLogger(__name__)
 
