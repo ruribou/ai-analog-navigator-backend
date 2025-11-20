@@ -4,10 +4,8 @@ RAG（Retrieval-Augmented Generation）サービス
 """
 from typing import Dict, Any, List, Optional
 import logging
-import psycopg2
 from psycopg2.extras import DictCursor
 
-from app.config import settings
 from app.services.lm_studio_service import LMStudioService
 from app.services.db_service import DBService
 
@@ -257,9 +255,8 @@ class RAGService:
             conn = self.db_service.get_connection()
             try:
                 with conn.cursor(cursor_factory=DictCursor) as cur:
-                    placeholders = ','.join(['%s'] * len(sorted_chunk_ids))
                     cur.execute(
-                        f"""
+                        """
                         SELECT 
                             chunk_id::text,
                             text,

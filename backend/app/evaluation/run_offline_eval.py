@@ -88,7 +88,7 @@ async def run_evaluation():
                     logger.info(f"  → Top 3: {chunk_ids[:3]}")
                     logger.info(f"  → スコア: {[f'{r['score']:.3f}' for r in results[:3]]}")
                 else:
-                    logger.warning(f"  → 結果なし")
+                    logger.warning("  → 結果なし")
                 
             except Exception as e:
                 logger.error(f"  → エラー: {e}")
@@ -140,7 +140,7 @@ async def run_evaluation():
         }, f, indent=2, ensure_ascii=False)
     
     logger.info(f"\n{'='*60}")
-    logger.info(f"=== 評価完了 ===")
+    logger.info("=== 評価完了 ===")
     logger.info(f"{'='*60}")
     logger.info(f"結果を保存: {results_file}")
     
