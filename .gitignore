@@ -45,3 +45,6 @@ temp/
 .DS_Store
 
 /docs/plans
+
+# Scraped data
+inputs/scraped/
