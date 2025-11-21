@@ -7,8 +7,18 @@ from typing import Optional
 class Settings:
     """アプリケーション設定"""
     
-    # Whisper設定
-    WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "base")  # tiny, base, small, medium, large
+    # Whisper設定 (faster-whisper)
+    WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "medium")  # medium, large-v3, small, base
+    WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cpu")  # cpu, cuda (Apple Silicon は cpu を使用)
+    WHISPER_COMPUTE_TYPE: str = os.getenv("WHISPER_COMPUTE_TYPE", "int8")  # int8 (CPU推奨), float16 (CUDA推奨)
+    WHISPER_BEAM_SIZE: int = int(os.getenv("WHISPER_BEAM_SIZE", "5"))
+    WHISPER_VAD_FILTER: bool = os.getenv("WHISPER_VAD_FILTER", "true").lower() == "true"
+    WHISPER_INITIAL_PROMPT: str = os.getenv(
+        "WHISPER_INITIAL_PROMPT",
+        "ここは東京電機大学のオープンキャンパスです。"
+        "理工学部、情報システムデザイン学系、神戸英利（かんべひでとし）、秋山、高橋、IoT、M2M、CPS などの専門用語や教員名が頻出します。"
+        "ASR の誤認識を避けるため、固有名詞はできるだけ正しい表記を選んでください。"
+    )
     
     # LM Studio設定
     # デフォルト: openai/gpt-oss-20b @ http://127.0.0.1:1234
