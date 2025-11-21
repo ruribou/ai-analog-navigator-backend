@@ -8,7 +8,7 @@ class Settings:
     """アプリケーション設定"""
     
     # Whisper設定 (faster-whisper)
-    WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "large-v3")  # large-v3, medium, small, base
+    WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "medium")  # medium, large-v3, small, base
     WHISPER_DEVICE: str = os.getenv("WHISPER_DEVICE", "cuda")  # cuda or cpu
     WHISPER_COMPUTE_TYPE: str = os.getenv("WHISPER_COMPUTE_TYPE", "float16")  # float16, int8, int8_float16
     WHISPER_BEAM_SIZE: int = int(os.getenv("WHISPER_BEAM_SIZE", "5"))
