@@ -7,7 +7,6 @@ import logging
 from pathlib import Path
 from typing import Dict, Optional
 
-from app.config import settings
 from app.services.lm_studio_service import LMStudioService
 
 logger = logging.getLogger(__name__)

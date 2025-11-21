@@ -52,8 +52,6 @@ class AudioProcessingService:
         
         # Step 2: 校正処理（新パイプライン）
         corrected_text = None
-        dict_time = 0.0
-        llm_time = 0.0
         
         if correct_text and transcribed_text:
             # 新しい校正パイプラインを使用
