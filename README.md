@@ -52,8 +52,9 @@ ai-analog-navigator/
 
 ## 必要な環境
 
-- Docker Desktop
-- Git
+- [Docker Desktop](https://www.docker.com/ja-jp/products/docker-desktop/)
+- [LM Studio](https://lmstudio.ai/)
+- [Git](https://git-scm.com/)
 
 ## クイックスタート
 
