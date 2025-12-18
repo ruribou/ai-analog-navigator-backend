@@ -64,7 +64,7 @@ class CorrectionEvaluator:
 
     def count_entity_matches(
         self,
-        original_query: str,
+        _original_query: str,
         corrected_query: str,
         expected_entities: List[str]
     ) -> Dict[str, Any]:
@@ -237,7 +237,7 @@ def print_summary_table(all_results: Dict[str, Dict]) -> None:
     print(f"{'手法':<25} {'固有名詞正解率':>15} {'Recall@5':>12} {'MRR@5':>12} {'Recall@10':>12}")
     print("-" * 90)
 
-    for pattern_name, results in all_results.items():
+    for results in all_results.values():
         label = results["label"]
         entity_acc = results["entity_accuracy"]
         metrics = results["overall"]
@@ -275,7 +275,7 @@ def print_summary_table(all_results: Dict[str, Dict]) -> None:
     print()
     print("-" * 90)
 
-    for pattern_name, results in all_results.items():
+    for results in all_results.values():
         label = results["label"]
         print(f"{label:<25}", end="")
         for cat in sorted(all_categories):
