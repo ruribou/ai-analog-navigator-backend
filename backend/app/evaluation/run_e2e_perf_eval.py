@@ -8,7 +8,7 @@ import sys
 import statistics
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 import logging
 import httpx
 
@@ -120,9 +120,6 @@ class E2EPerformanceEvaluator:
             }
 
         # Step 2: TTS
-        # 回答テキストを取得（長すぎる場合は切り詰め）
-        answer_text = rag_result.get("answer_length", 0)
-
         # RAGの回答を再取得（実際のテキストが必要）
         rag_response = await client.post(
             f"{self.base_url}/api/rag_query",
