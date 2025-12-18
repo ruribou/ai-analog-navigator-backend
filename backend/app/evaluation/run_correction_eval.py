@@ -15,10 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.evaluation.metrics import calculate_metrics, calculate_metrics_by_category
 from app.services.rag_service import RAGService
-from app.services.transcription_corrector import (
-    normalize_with_domain_terms,
-    correct_transcription
-)
+from app.services.transcription_corrector import normalize_with_domain_terms
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -175,7 +172,7 @@ async def run_correction_evaluation():
                 if chunk_ids:
                     logger.info(f"  検索結果: {len(chunk_ids)}件, Top1={chunk_ids[0][:8]}...")
                 else:
-                    logger.warning(f"  検索結果: 0件")
+                    logger.warning("  検索結果: 0件")
 
             except Exception as e:
                 logger.error(f"  検索エラー: {e}")
