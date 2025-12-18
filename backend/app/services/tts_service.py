@@ -1,7 +1,12 @@
 """
 VOICEVOX Text-to-Speech サービス
 """
+import json
 import logging
+import re
+from pathlib import Path
+from typing import Dict
+
 import httpx
 
 logger = logging.getLogger(__name__)
@@ -28,6 +33,69 @@ SPEAKERS = {
 }
 
 DEFAULT_SPEAKER_ID = 3  # ずんだもん（ノーマル）
+
+
+def load_tts_terms() -> Dict[str, str]:
+    """読み上げ用辞書を読み込み
+
+    Returns:
+        読み上げ補正辞書 {漢字/英字: 読み}
+    """
+    try:
+        terms_path = Path(__file__).parent.parent / "data" / "tts_terms.json"
+
+        if not terms_path.exists():
+            logger.warning(f"読み上げ用辞書が見つかりません: {terms_path}")
+            return {}
+
+        with open(terms_path, "r", encoding="utf-8") as f:
+            tts_dict = json.load(f)
+
+        logger.info(f"読み上げ用辞書を読み込みました: {len(tts_dict)} エントリ")
+        return tts_dict
+
+    except Exception as e:
+        logger.error(f"読み上げ用辞書の読み込みエラー: {e}")
+        return {}
+
+
+def normalize_for_tts(text: str, tts_dict: Dict[str, str] | None = None) -> str:
+    """読み上げ用にテキストを正規化
+
+    固有名詞を正しい読み方に変換する
+
+    Args:
+        text: 読み上げるテキスト
+        tts_dict: 読み上げ用辞書 {漢字/英字: 読み}
+                  None の場合は自動読み込み
+
+    Returns:
+        正規化されたテキスト
+    """
+    if tts_dict is None:
+        tts_dict = load_tts_terms()
+
+    if not tts_dict:
+        return text
+
+    normalized_text = text
+
+    # 辞書を長い順にソート（部分一致の競合を避けるため）
+    sorted_terms = sorted(tts_dict.items(), key=lambda x: len(x[0]), reverse=True)
+
+    replacements_made = []
+
+    for original, reading in sorted_terms:
+        pattern = re.compile(re.escape(original))
+
+        if pattern.search(normalized_text):
+            normalized_text = pattern.sub(reading, normalized_text)
+            replacements_made.append(f"{original} → {reading}")
+
+    if replacements_made:
+        logger.info(f"読み上げ補正: {', '.join(replacements_made)}")
+
+    return normalized_text
 
 
 class TTSService:
@@ -60,13 +128,16 @@ class TTSService:
             WAV形式の音声データ（bytes）
         """
         try:
+            # 0. 読み上げ用にテキストを正規化
+            normalized_text = normalize_for_tts(text)
+
             async with httpx.AsyncClient(timeout=60.0) as client:
                 # 1. 音声合成用のクエリを作成
-                logger.info(f"音声合成クエリ作成: speaker={speaker_id}, text={text[:50]}...")
+                logger.info(f"音声合成クエリ作成: speaker={speaker_id}, text={normalized_text[:50]}...")
 
                 query_response = await client.post(
                     f"{self.base_url}/audio_query",
-                    params={"text": text, "speaker": speaker_id}
+                    params={"text": normalized_text, "speaker": speaker_id}
                 )
                 query_response.raise_for_status()
                 audio_query = query_response.json()
