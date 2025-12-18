@@ -89,3 +89,73 @@ export async function ragQuery(
   return response.json();
 }
 
+/**
+ * 話者情報
+ */
+export interface Speaker {
+  id: number;
+  name: string;
+}
+
+/**
+ * テキストを音声に変換（TTS）
+ */
+export async function synthesizeSpeech(
+  text: string,
+  speakerId: number = 3,
+  speedScale: number = 1.0
+): Promise<Blob> {
+  const response = await fetch(`${API_BASE_URL}/api/tts/synthesize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text,
+      speaker_id: speakerId,
+      speed_scale: speedScale,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Unknown error' }));
+    throw new Error(error.detail || `TTS failed: ${response.status}`);
+  }
+
+  return response.blob();
+}
+
+/**
+ * 利用可能な話者一覧を取得
+ */
+export async function getSpeakers(): Promise<Speaker[]> {
+  const response = await fetch(`${API_BASE_URL}/api/tts/speakers`);
+
+  if (!response.ok) {
+    throw new Error(`Failed to get speakers: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * 音声を再生するヘルパー関数
+ */
+export function playAudioBlob(audioBlob: Blob): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+
+    audio.onended = () => {
+      URL.revokeObjectURL(audioUrl);
+      resolve();
+    };
+
+    audio.onerror = () => {
+      URL.revokeObjectURL(audioUrl);
+      reject(new Error('音声の再生に失敗しました'));
+    };
+
+    audio.play().catch(reject);
+  });
+}
