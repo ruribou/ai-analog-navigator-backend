@@ -4,7 +4,6 @@ Text-to-Speech API エンドポイント
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
-from typing import Optional
 import logging
 
 from app.services.tts_service import TTSService, SPEAKERS, DEFAULT_SPEAKER_ID
