@@ -40,6 +40,15 @@ services:
       - ai-navigator-network
     command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # VOICEVOX Text-to-Speech Engine
+  voicevox:
+    image: voicevox/voicevox_engine:cpu-ubuntu20.04-latest
+    container_name: ai-navigator-voicevox
+    ports:
+      - "50021:50021"
+    networks:
+      - ai-navigator-network
+
   # Next.js Frontend Application
   frontend:
     build:
