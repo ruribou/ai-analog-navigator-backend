@@ -1,0 +1,90 @@
+{
+  "timestamp": "20251218_141747",
+  "num_queries": 35,
+  "patterns": [
+    "no_correction",
+    "dict_only"
+  ],
+  "results": {
+    "no_correction": {
+      "label": "補正なし（ベースライン）",
+      "overall": {
+        "recall@5": 0.11428571428571428,
+        "recall@10": 0.17142857142857143,
+        "mrr@5": 0.06666666666666667,
+        "mrr@10": 0.07341269841269842
+      },
+      "by_category": {
+        "professor": {
+          "recall@5": 0.0,
+          "recall@10": 0.0,
+          "mrr@5": 0.0,
+          "mrr@10": 0.0
+        },
+        "lab": {
+          "recall@5": 0.1,
+          "recall@10": 0.1,
+          "mrr@5": 0.05,
+          "mrr@10": 0.05
+        },
+        "theme": {
+          "recall@5": 0.15789473684210525,
+          "recall@10": 0.2631578947368421,
+          "mrr@5": 0.09649122807017543,
+          "mrr@10": 0.10891812865497078
+        },
+        "department": {
+          "recall@5": 0.0,
+          "recall@10": 0.0,
+          "mrr@5": 0.0,
+          "mrr@10": 0.0
+        }
+      },
+      "entity_accuracy": 0.0,
+      "entity_stats": {
+        "total": 13,
+        "matched": 0
+      }
+    },
+    "dict_only": {
+      "label": "辞書補正のみ",
+      "overall": {
+        "recall@5": 0.2857142857142857,
+        "recall@10": 0.3142857142857143,
+        "mrr@5": 0.21428571428571427,
+        "mrr@10": 0.21746031746031744
+      },
+      "by_category": {
+        "professor": {
+          "recall@5": 0.5,
+          "recall@10": 0.5,
+          "mrr@5": 0.3333333333333333,
+          "mrr@10": 0.3333333333333333
+        },
+        "lab": {
+          "recall@5": 0.3,
+          "recall@10": 0.3,
+          "mrr@5": 0.3,
+          "mrr@10": 0.3
+        },
+        "theme": {
+          "recall@5": 0.2631578947368421,
+          "recall@10": 0.3157894736842105,
+          "mrr@5": 0.16666666666666666,
+          "mrr@10": 0.17251461988304093
+        },
+        "department": {
+          "recall@5": 0.0,
+          "recall@10": 0.0,
+          "mrr@5": 0.0,
+          "mrr@10": 0.0
+        }
+      },
+      "entity_accuracy": 1.0,
+      "entity_stats": {
+        "total": 13,
+        "matched": 13
+      }
+    }
+  }
+}
