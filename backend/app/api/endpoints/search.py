@@ -2,16 +2,30 @@
 検索APIエンドポイント
 Dense / Prefilter+Dense / Hybrid 検索戦略をサポート
 """
-from fastapi import APIRouter, HTTPException
+from functools import lru_cache
+import logging
+
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Literal, Any
-import logging
 
 from app.services.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+@lru_cache
+def get_rag_service() -> RAGService:
+    """
+    RAGサービスを取得（シングルトン）
+
+    lru_cacheにより初回呼び出し時のみ初期化され、
+    以降はキャッシュされたインスタンスを返す。
+    """
+    logger.info("RAGサービス初期化")
+    return RAGService()
 
 
 # ============================================================================
@@ -72,17 +86,20 @@ class SearchResponse(BaseModel):
 # ============================================================================
 
 @router.post("/search", response_model=SearchResponse)
-async def search(request: SearchRequest):
+async def search(
+    request: SearchRequest,
+    rag_service: RAGService = Depends(get_rag_service)
+):
     """
     検索エンドポイント
-    
+
     3種類の検索戦略をサポート:
     - **dense**: ベクトル検索のみ（意味検索）
     - **prefilter_dense**: メタデータフィルタ + ベクトル検索
     - **hybrid**: Dense + BM25（キーワード検索）のスコア合成
-    
+
     ## 使用例
-    
+
     ### Dense検索
     ```json
     {
@@ -91,7 +108,7 @@ async def search(request: SearchRequest):
       "top_k": 5
     }
     ```
-    
+
     ### Prefilter + Dense
     ```json
     {
@@ -101,7 +118,7 @@ async def search(request: SearchRequest):
       "top_k": 5
     }
     ```
-    
+
     ### Hybrid
     ```json
     {
@@ -115,24 +132,16 @@ async def search(request: SearchRequest):
     """
     try:
         logger.info(f"検索リクエスト: strategy={request.strategy}, query={request.query}")
-        
-        # RAG Serviceインスタンスを作成
-        rag_service = RAGService()
-        
+
         # 戦略に応じて検索実行
-        if request.strategy == "dense":
+        # Note: prefilter_dense は dense に統合（後方互換のため残す）
+        if request.strategy in ("dense", "prefilter_dense"):
             results = await rag_service.search_dense(
-                request.query, 
-                request.top_k
+                request.query,
+                filters=request.filters,
+                top_k=request.top_k
             )
-        
-        elif request.strategy == "prefilter_dense":
-            results = await rag_service.search_prefilter_dense(
-                request.query, 
-                request.filters or {}, 
-                request.top_k
-            )
-        
+
         elif request.strategy == "hybrid":
             results = await rag_service.search_hybrid(
                 request.query, 
