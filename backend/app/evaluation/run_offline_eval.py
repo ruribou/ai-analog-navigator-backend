@@ -65,15 +65,12 @@ async def run_evaluation():
                 logger.info(f"[{idx}/{len(queries)}] {qid}: {qtext}")
                 
                 # 戦略に応じて検索実行
-                if strategy == "dense":
-                    results = await rag_service.search_dense(qtext, top_k=10)
-                
-                elif strategy == "prefilter_dense":
-                    # フィルタなしで実行（必要に応じてカスタマイズ可能）
-                    results = await rag_service.search_prefilter_dense(
-                        qtext, filters={}, top_k=10
+                # Note: prefilter_dense は dense に統合
+                if strategy in ("dense", "prefilter_dense"):
+                    results = await rag_service.search_dense(
+                        qtext, filters=None, top_k=10
                     )
-                
+
                 elif strategy == "hybrid":
                     results = await rag_service.search_hybrid(
                         qtext, filters=None, top_k=10, alpha=0.6, beta=0.4

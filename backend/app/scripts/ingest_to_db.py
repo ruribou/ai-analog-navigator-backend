@@ -10,7 +10,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.services.db_service import DBService
-from app.services.lm_studio_service import LMStudioService
+from app.services.embedding_service import EmbeddingService
 from app.scripts.utils.parsers import parse_page
 from app.scripts.utils.chunker import chunk_text
 
@@ -82,7 +82,7 @@ async def ingest_page(html_path: Path, url: str) -> bool:
         # 4. 埋め込み生成
         chunk_texts = [chunk['text'] for chunk in chunks]
         logger.info("埋め込み生成開始...")
-        embeddings = await LMStudioService.generate_embeddings(chunk_texts, batch_size=32)
+        embeddings = await EmbeddingService.generate(chunk_texts, batch_size=32)
         logger.info(f"埋め込み生成完了: {len(embeddings)}個")
         
         if len(embeddings) != len(chunks):
@@ -102,7 +102,7 @@ async def ingest_page(html_path: Path, url: str) -> bool:
         
         # 6. chunks テーブルに一括登録
         embedding_model = "text-embedding-nomic-embed-text-v1.5"
-        embedding_dim = LMStudioService.get_embedding_dim()
+        embedding_dim = EmbeddingService.get_dim()
         
         chunks_data = []
         for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):

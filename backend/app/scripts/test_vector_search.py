@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from app.services.db_service import DBService
-from app.services.lm_studio_service import LMStudioService
+from app.services.embedding_service import EmbeddingService
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ async def test_search(query: str, top_k: int = 10):
     
     # 1. クエリの埋め込み生成
     logger.info("クエリの埋め込み生成中...")
-    embeddings = await LMStudioService.generate_embeddings([query])
+    embeddings = await EmbeddingService.generate([query])
     query_embedding = embeddings[0]
     logger.info(f"埋め込み生成完了 (次元数: {len(query_embedding)})")
     
