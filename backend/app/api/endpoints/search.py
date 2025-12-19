@@ -36,7 +36,7 @@ class SearchRequest(BaseModel):
     """検索リクエスト"""
     query: str = Field(..., min_length=1, description="検索クエリ")
     strategy: Literal["dense", "prefilter_dense", "hybrid"] = Field(
-        default="dense", 
+        default="dense",
         description="検索戦略 (dense: ベクトル検索のみ, prefilter_dense: フィルタ+ベクトル検索, hybrid: ベクトル+BM25)"
     )
     filters: Optional[Dict[str, str]] = Field(
@@ -45,20 +45,20 @@ class SearchRequest(BaseModel):
         examples=[{"department": "理工学部", "professor": "神戸 英利"}]
     )
     top_k: int = Field(
-        default=10, 
-        ge=1, 
-        le=50, 
+        default=10,
+        ge=1,
+        le=50,
         description="取得件数 (1〜50)"
     )
     alpha: float = Field(
-        default=0.6, 
-        ge=0.0, 
+        default=0.6,
+        ge=0.0,
         le=1.0,
         description="Hybrid時のDense検索の重み (0.0〜1.0)"
     )
     beta: float = Field(
-        default=0.4, 
-        ge=0.0, 
+        default=0.4,
+        ge=0.0,
         le=1.0,
         description="Hybrid時のBM25検索の重み (0.0〜1.0)"
     )
@@ -144,32 +144,31 @@ async def search(
 
         elif request.strategy == "hybrid":
             results = await rag_service.search_hybrid(
-                request.query, 
-                request.filters, 
+                request.query,
+                request.filters,
                 request.top_k,
                 request.alpha,
                 request.beta
             )
-        
+
         else:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Unknown strategy: {request.strategy}"
             )
-        
+
         logger.info(f"検索完了: {len(results)}件")
-        
+
         return SearchResponse(
             strategy=request.strategy,
             query=request.query,
             results=results,
             total=len(results)
         )
-    
+
     except Exception as e:
         logger.error(f"検索エラー: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"検索処理中にエラーが発生しました: {str(e)}"
         )
-

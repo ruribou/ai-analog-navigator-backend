@@ -17,28 +17,28 @@ logger = logging.getLogger(__name__)
 
 class DBService:
     """PostgreSQL + pgvector データベースサービス"""
-    
+
     @staticmethod
     def get_connection():
         """DB接続を取得"""
         if not settings.DATABASE_URL:
             raise ValueError("DATABASE_URL が設定されていません")
-        
+
         try:
             conn = psycopg2.connect(settings.DATABASE_URL)
             return conn
         except Exception as e:
             logger.error(f"DB接続エラー: {e}")
             raise
-    
+
     @staticmethod
     def check_document_exists(url: str) -> Optional[str]:
         """
         ドキュメントが既に存在するかチェック
-        
+
         Args:
             url: ソースURL
-        
+
         Returns:
             存在する場合はdoc_id、存在しない場合はNone
         """
@@ -58,7 +58,7 @@ class DBService:
         finally:
             if conn:
                 conn.close()
-    
+
     @staticmethod
     def insert_document(
         url: str,
@@ -69,14 +69,14 @@ class DBService:
     ) -> str:
         """
         documentsテーブルにレコードを挿入
-        
+
         Args:
             url: ソースURL
             title: タイトル
             text: 本文テキスト
             source_type: ソースタイプ ('school_hp', 'lab_hp', 'pdf', 'news')
             meta: メタデータ（JSONB）
-        
+
         Returns:
             doc_id (UUID文字列)
         """
@@ -84,20 +84,20 @@ class DBService:
         try:
             # コンテンツハッシュを生成
             content_hash = hashlib.sha256(text.encode('utf-8')).hexdigest()
-            
+
             doc_id = str(uuid4())
             fetched_at = datetime.now()
-            
+
             conn = DBService.get_connection()
             with conn.cursor() as cur:
                 cur.execute(
                     """
-                    INSERT INTO documents 
-                    (doc_id, source_url, source_type, title, lang, fetched_at, 
+                    INSERT INTO documents
+                    (doc_id, source_url, source_type, title, lang, fetched_at,
                      content_hash, status, meta)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (source_url) 
-                    DO UPDATE SET 
+                    ON CONFLICT (source_url)
+                    DO UPDATE SET
                         title = EXCLUDED.title,
                         content_hash = EXCLUDED.content_hash,
                         updated_at = EXCLUDED.fetched_at,
@@ -129,7 +129,7 @@ class DBService:
         finally:
             if conn:
                 conn.close()
-    
+
     @staticmethod
     def insert_chunks(
         doc_id: str,
@@ -137,7 +137,7 @@ class DBService:
     ) -> int:
         """
         chunksテーブルに複数レコードをbulk insert
-        
+
         Args:
             doc_id: ドキュメントID
             chunks_data: チャンクデータのリスト
@@ -156,7 +156,7 @@ class DBService:
                 - embedding: List[float]
                 - embedding_model: str
                 - embedding_dim: int
-        
+
         Returns:
             挿入されたレコード数
         """
@@ -189,13 +189,13 @@ class DBService:
                         chunk['embedding_dim'],
                         1  # version
                     ))
-                
+
                 # bulk insert実行
                 psycopg2.extras.execute_batch(
                     cur,
                     """
-                    INSERT INTO chunks 
-                    (chunk_id, doc_id, chunk_index, text, token_count, 
+                    INSERT INTO chunks
+                    (chunk_id, doc_id, chunk_index, text, token_count,
                      heading_path, tags, campus, building, department, lab, professor,
                      validity_start, validity_end, source_url,
                      embedding, embedding_model, embedding_dim, version)
@@ -203,7 +203,7 @@ class DBService:
                     """,
                     insert_values
                 )
-                
+
                 conn.commit()
                 inserted_count = len(insert_values)
                 logger.info(f"チャンク登録成功: {inserted_count}件 (doc_id={doc_id})")
@@ -216,15 +216,15 @@ class DBService:
         finally:
             if conn:
                 conn.close()
-    
+
     @staticmethod
     def delete_chunks_by_doc_id(doc_id: str) -> int:
         """
         指定されたdoc_idのチャンクを削除（再登録時用）
-        
+
         Args:
             doc_id: ドキュメントID
-        
+
         Returns:
             削除されたレコード数
         """
@@ -245,4 +245,3 @@ class DBService:
         finally:
             if conn:
                 conn.close()
-
