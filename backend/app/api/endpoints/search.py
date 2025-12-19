@@ -2,16 +2,30 @@
 検索APIエンドポイント
 Dense / Prefilter+Dense / Hybrid 検索戦略をサポート
 """
-from fastapi import APIRouter, HTTPException
+from functools import lru_cache
+import logging
+
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Literal, Any
-import logging
 
 from app.services.rag_service import RAGService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+@lru_cache
+def get_rag_service() -> RAGService:
+    """
+    RAGサービスを取得（シングルトン）
+
+    lru_cacheにより初回呼び出し時のみ初期化され、
+    以降はキャッシュされたインスタンスを返す。
+    """
+    logger.info("RAGサービス初期化")
+    return RAGService()
 
 
 # ============================================================================
@@ -22,7 +36,7 @@ class SearchRequest(BaseModel):
     """検索リクエスト"""
     query: str = Field(..., min_length=1, description="検索クエリ")
     strategy: Literal["dense", "prefilter_dense", "hybrid"] = Field(
-        default="dense", 
+        default="dense",
         description="検索戦略 (dense: ベクトル検索のみ, prefilter_dense: フィルタ+ベクトル検索, hybrid: ベクトル+BM25)"
     )
     filters: Optional[Dict[str, str]] = Field(
@@ -31,20 +45,20 @@ class SearchRequest(BaseModel):
         examples=[{"department": "理工学部", "professor": "神戸 英利"}]
     )
     top_k: int = Field(
-        default=10, 
-        ge=1, 
-        le=50, 
+        default=10,
+        ge=1,
+        le=50,
         description="取得件数 (1〜50)"
     )
     alpha: float = Field(
-        default=0.6, 
-        ge=0.0, 
+        default=0.6,
+        ge=0.0,
         le=1.0,
         description="Hybrid時のDense検索の重み (0.0〜1.0)"
     )
     beta: float = Field(
-        default=0.4, 
-        ge=0.0, 
+        default=0.4,
+        ge=0.0,
         le=1.0,
         description="Hybrid時のBM25検索の重み (0.0〜1.0)"
     )
@@ -72,17 +86,20 @@ class SearchResponse(BaseModel):
 # ============================================================================
 
 @router.post("/search", response_model=SearchResponse)
-async def search(request: SearchRequest):
+async def search(
+    request: SearchRequest,
+    rag_service: RAGService = Depends(get_rag_service)
+):
     """
     検索エンドポイント
-    
+
     3種類の検索戦略をサポート:
     - **dense**: ベクトル検索のみ（意味検索）
     - **prefilter_dense**: メタデータフィルタ + ベクトル検索
     - **hybrid**: Dense + BM25（キーワード検索）のスコア合成
-    
+
     ## 使用例
-    
+
     ### Dense検索
     ```json
     {
@@ -91,7 +108,7 @@ async def search(request: SearchRequest):
       "top_k": 5
     }
     ```
-    
+
     ### Prefilter + Dense
     ```json
     {
@@ -101,7 +118,7 @@ async def search(request: SearchRequest):
       "top_k": 5
     }
     ```
-    
+
     ### Hybrid
     ```json
     {
@@ -115,52 +132,43 @@ async def search(request: SearchRequest):
     """
     try:
         logger.info(f"検索リクエスト: strategy={request.strategy}, query={request.query}")
-        
-        # RAG Serviceインスタンスを作成
-        rag_service = RAGService()
-        
+
         # 戦略に応じて検索実行
-        if request.strategy == "dense":
+        # Note: prefilter_dense は dense に統合（後方互換のため残す）
+        if request.strategy in ("dense", "prefilter_dense"):
             results = await rag_service.search_dense(
-                request.query, 
-                request.top_k
+                request.query,
+                filters=request.filters,
+                top_k=request.top_k
             )
-        
-        elif request.strategy == "prefilter_dense":
-            results = await rag_service.search_prefilter_dense(
-                request.query, 
-                request.filters or {}, 
-                request.top_k
-            )
-        
+
         elif request.strategy == "hybrid":
             results = await rag_service.search_hybrid(
-                request.query, 
-                request.filters, 
+                request.query,
+                request.filters,
                 request.top_k,
                 request.alpha,
                 request.beta
             )
-        
+
         else:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Unknown strategy: {request.strategy}"
             )
-        
+
         logger.info(f"検索完了: {len(results)}件")
-        
+
         return SearchResponse(
             strategy=request.strategy,
             query=request.query,
             results=results,
             total=len(results)
         )
-    
+
     except Exception as e:
         logger.error(f"検索エラー: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"検索処理中にエラーが発生しました: {str(e)}"
         )
-

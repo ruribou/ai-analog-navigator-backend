@@ -14,7 +14,7 @@ router = APIRouter()
 async def health_check():
     """
     ヘルスチェックエンドポイント
-    
+
     Returns:
         HealthResponse: システムの健康状態
         - healthy: 全サービス正常
@@ -23,13 +23,13 @@ async def health_check():
     """
     # LM Studioの状態確認
     lm_studio_available = await LMStudioService.check_model_availability()
-    
+
     # ステータス決定
     if lm_studio_available:
         status = "healthy"
     else:
         status = "degraded"  # Whisperは動作するが、LM Studioが利用不可
-    
+
     return HealthResponse(
         status=status,
         whisper_model=settings.WHISPER_MODEL,

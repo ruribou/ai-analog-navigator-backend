@@ -22,7 +22,7 @@ class RAGQueryRequest(BaseModel):
     """RAGクエリリクエスト"""
     query: str = Field(..., min_length=1, description="検索クエリ")
     strategy: Literal["dense", "prefilter_dense", "hybrid"] = Field(
-        default="prefilter_dense", 
+        default="prefilter_dense",
         description="検索戦略"
     )
     filters: Optional[Dict[str, str]] = Field(
@@ -30,9 +30,9 @@ class RAGQueryRequest(BaseModel):
         description="メタデータフィルタ"
     )
     top_k: int = Field(
-        default=5, 
-        ge=1, 
-        le=20, 
+        default=5,
+        ge=1,
+        le=20,
         description="取得件数 (1〜20)"
     )
 
@@ -61,11 +61,11 @@ class RAGQueryResponse(BaseModel):
 async def rag_query(request: RAGQueryRequest):
     """
     RAGクエリエンドポイント
-    
+
     クエリテキストを受け取り、検索 + LLM回答生成を実行します。
-    
+
     ## 使用例
-    
+
     ```json
     {
       "query": "神戸先生の研究内容を教えてください",
@@ -77,10 +77,10 @@ async def rag_query(request: RAGQueryRequest):
     """
     try:
         logger.info(f"RAGクエリリクエスト: strategy={request.strategy}, query={request.query}")
-        
+
         # RAG Serviceインスタンスを作成
         rag_service = RAGService()
-        
+
         # 検索 + 回答生成を実行
         result = await rag_service.query_with_answer(
             query_text=request.query,
@@ -88,19 +88,18 @@ async def rag_query(request: RAGQueryRequest):
             filters=request.filters,
             top_k=request.top_k
         )
-        
+
         logger.info(f"RAGクエリ完了: {len(result['context_chunks'])}件のチャンクを使用")
-        
+
         return RAGQueryResponse(
             answer=result["answer"],
             used_strategy=result["used_strategy"],
             context_chunks=result["context_chunks"]
         )
-    
+
     except Exception as e:
         logger.error(f"RAGクエリエラー: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"RAGクエリ処理中にエラーが発生しました: {str(e)}"
         )
-
